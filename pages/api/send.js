@@ -5,7 +5,7 @@ export default async function handler(req, res) {
 
   // Ganti dengan BOT_TOKEN & CHAT_ID Anda
   const BOT_TOKEN = "8427844482:AAHHXCP_psaehlBnm8SHBEEFvhTehYw2gEY";
-  const CHAT_ID = "7600526426";
+  const CHAT_ID = "-1002858675066";
 
   try {
     const { text } = req.body;
