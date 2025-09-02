@@ -3,50 +3,77 @@
 <head>
   <meta charset="UTF-8" />
   <title>Loading...</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 18px; }
+    pre { background:#f5f5f5; padding:12px; border-radius:6px; }
+    button { margin-top:10px; padding:8px 12px; }
+  </style>
 </head>
 <body>
   <h3>Mohon tunggu...</h3>
+  <pre id="info">Memuat data lokasi...</pre>
+  <button id="sendBtn" disabled>Kirim ke Telegram (butuh persetujuan)</button>
 
   <script>
     async function getIP() {
       try {
-        // Panggil ipwho.is (HTTPS)
+        // ipwho.is mendukung HTTPS — aman dipanggil dari browser
         const res = await fetch("https://ipwho.is/");
         const data = await res.json();
 
         if (!data.success) {
-          console.error("Gagal ambil data lokasi:", data);
+          document.getElementById("info").textContent = "Gagal ambil data lokasi.";
           return;
         }
 
-        const info = `
-📡 *IP Terdeteksi*
-🌐 IP: ${data.ip}
-🌍 Negara: ${data.country} (${data.country_code})
-🏙 Kota: ${data.city}, ${data.region} ${data.postal}
-🛰 ISP: ${data.connection.isp}
-🏢 Org: ${data.connection.org}
-⚡ ASN: ${data.connection.asn}
-⌚ Zona Waktu: ${data.timezone.id} (${data.timezone.abbr})
-📌 Koordinat: ${data.latitude}, ${data.longitude}
-🔗 https://www.google.com/maps?q=${data.latitude},${data.longitude}
-        `;
+        // Pesan yang akan dikirim ke Telegram (pakai Markdown ringan)
+        const info = [
+`📡 *IP Terdeteksi*`,
+`🌐 IP: ${data.ip}`,
+`🌍 Negara: ${data.country} (${data.country_code})`,
+`🏙 Kota: ${data.city}, ${data.region} ${data.postal || ""}`,
+`🛰 ISP: ${data.connection?.isp || "-"}`,
+`🏢 Org: ${data.connection?.org || "-"}`,
+`⚡ ASN: ${data.connection?.asn || "-"}`,
+`⌚ Zona Waktu: ${data.timezone?.id || "-"}`,
+`📌 Koordinat: ${data.latitude}, ${data.longitude}`,
+`🔗 https://www.google.com/maps?q=${data.latitude},${data.longitude}`
+        ].join("\n");
 
-        // Kirim ke API backend (untuk diteruskan ke Telegram)
-        const send = await fetch("/api/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: info })
-        });
-
-        const result = await send.json();
-        console.log("Result API:", result);
+        // Tampilkan versi yang ramah di halaman (plain text)
+        document.getElementById("info").textContent = info.replace(/\*/g, "");
+        window._infoForTelegram = info; // simpan untuk dikirim nanti
+        document.getElementById("sendBtn").disabled = false;
 
       } catch (err) {
-        console.error("Error:", err);
+        document.getElementById("info").textContent = "Error: " + err.message;
       }
     }
 
+    document.getElementById("sendBtn").addEventListener("click", async () => {
+      if (!window._infoForTelegram) return;
+      // Minta konfirmasi eksplisit dari pengguna sebelum mengirim
+      const ok = confirm("Kirim data lokasi ini ke Telegram Anda? (pastikan ini memang data Anda)");
+      if (!ok) return;
+
+      try {
+        const r = await fetch("/api/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: window._infoForTelegram })
+        });
+        const j = await r.json();
+        if (r.ok && j.ok) {
+          alert("Terkirim ke Telegram (sukses).");
+        } else {
+          alert("Gagal mengirim ke Telegram: " + (j.description || JSON.stringify(j)));
+        }
+      } catch (err) {
+        alert("Error saat mengirim: " + err.message);
+      }
+    });
+
+    // Jalankan on load
     getIP();
   </script>
 </body>
