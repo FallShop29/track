@@ -1,30 +1,45 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  // Token & Chat ID langsung ditulis
+  const token = "8427844482:AAHHXCP_psaehlBnm8SHBEEFvhTehYw2gEY";
+  const chatId = "7600526426";
 
-  // Ganti dengan token bot kamu & chat_id hasil getUpdates
-  const BOT_TOKEN = "8427844482:AAHHXCP_psaehlBnm8SHBEEFvhTehYw2gEY";
-  const CHAT_ID = "7600526426"; // pastikan ini hasil /getUpdates yang valid
+  // Ambil data dari request
+  const ip =
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.connection?.remoteAddress ||
+    "unknown";
+  const ua = req.headers["user-agent"] || "unknown";
+  const time = new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
 
-  const { text } = req.body;
+  // Format pesan
+  const text = `
+🔎 *IP Terdeteksi!*
+📍 IP: ${ip}
+🌐 User-Agent: ${ua}
+🕒 Waktu: ${time}
+`;
 
+  // Kirim ke Telegram
   try {
-    const telegram = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: CHAT_ID,
-        text,
-        parse_mode: "Markdown",
-        disable_web_page_preview: false
-      })
-    });
+    const send = await fetch(
+      `https://api.telegram.org/bot${token}/sendMessage`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text,
+          parse_mode: "Markdown",
+        }),
+      }
+    );
 
-    const result = await telegram.json();
-    return res.status(200).json(result);
+    const result = await send.json();
+    console.log("Telegram Response:", result);
 
+    res.status(200).json({ success: true, sent: result });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ success: false, error: err.message });
   }
-  }
+}
