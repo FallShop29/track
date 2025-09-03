@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   }
 
   const BOT_TOKEN = "8427844482:AAHHXCP_psaehlBnm8SHBEEFvhTehYw2gEY";   // sudah kamu ganti
-  const CHAT_ID   = "-1002858675066";     // sudah kamu ganti
+  const CHAT_ID   = "7600526426";     // sudah kamu ganti
 
   try {
     const { text } = req.body || {};
