@@ -1,11 +1,15 @@
 {
   "version": 2,
   "builds": [
-    { "src": "index.html", "use": "@vercel/static" },
-    { "src": "api/ping.js", "use": "@vercel/node" }
+    {
+      "src": "api/send.js",
+      "use": "@vercel/node"
+    }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    {
+      "src": "/api/send",
+      "dest": "api/send.js"
+    }
   ]
 }
