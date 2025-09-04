@@ -12,7 +12,7 @@
   ],
   "routes": [
     {
-      "src": "/api/send",
+      "src": "/send",
       "dest": "send.js"
     },
     {
